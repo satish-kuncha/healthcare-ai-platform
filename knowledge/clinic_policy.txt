@@ -1,0 +1,10 @@
+CLINIC APPOINTMENT & INSURANCE POLICY REGULATION
+
+1. INSURANCE COVERAGE RULES:
+- Policy codes starting with 'INS-1' (e.g., INS-1111) represent Premium Corporate Packages. They cover all specialized treatments, including advanced Orthopedic Consultations, Cardiology reviews, and multi-slice MRI scans with 100% co-pay waivers.
+- Policy codes starting with 'INS-4' (e.g., INS-4491, INS-4496) represent Standard Individual Packages. They cover standard General Physician visits and basic blood tests. However, specialized Orthopedic consultations or advanced scans require a 20% out-of-pocket co-payment from the patient.
+- Homeopathic treatments or alternative medicine sessions are strictly out-of-network for ALL policy classes and must be paid fully upfront.
+
+2. SCHEDULING & CANCELLATION:
+- Standard appointments must be cancelled at least 24 hours in advance to avoid a late fee.
+- High-demand slots (such as Monday afternoons between 2:00 PM and 4:00 PM) require administrative manager sign-off prior to locking the slot for an individual session.
