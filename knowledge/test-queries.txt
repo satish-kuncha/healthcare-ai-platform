@@ -17,3 +17,8 @@ Test Case 3: The "Allergy Overrides" Protocol
 The Query: "What is the procedure if a medication triggers an allergy flag in the system? Who has to sign off?"
 
 Why it tests the Re-Ranker: Section 3.1 discusses prescription rules and signatures for Schedule H drugs. Section 3.3 discusses allergy flags and physician overrides. Both share keywords like "signature", "physician", and "system". The re-ranker ensures the structural logic of the system override process wins over generic prescription rules.
+
+
+-----------------------------------------------------------------------------------
+
+Hi, my patient ID is PT-8831. Can you look up my file and tell me what medications I am currently prescribed?

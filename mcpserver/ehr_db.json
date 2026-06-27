@@ -1,0 +1,16 @@
+{
+  "patients": {
+    "PT-8831": {
+      "name": "Jane Doe",
+      "conditions": ["Chronic Hypertension", "Type 2 Diabetes"],
+      "allergies": ["Penicillin", "Sulfa Drugs"],
+      "current_medications": ["Lisinopril 10mg daily", "Metformin 500mg twice daily"]
+    },
+    "PT-4421": {
+      "name": "John Smith",
+      "conditions": ["Asthma", "Seasonal Allergies"],
+      "allergies": ["Aspirin"],
+      "current_medications": ["Albuterol inhaler as needed", "Fluticasone nasal spray"]
+    }
+  }
+}

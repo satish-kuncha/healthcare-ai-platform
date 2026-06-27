@@ -1,6 +1,7 @@
 # unified_agent.py
 from pydantic_ai import Agent
 from models.context import PatientContext
+from tools.mcp_tools import fetch_ehr_medical_history
 
 # Import your mock tools directly
 from tools.scheduling_tools import get_available_slots, book_appointment, cancel_appointment, stage_appointment_booking
@@ -18,7 +19,8 @@ healthcare_agent = Agent(
         cancel_appointment,
         verify_coverage,
         check_eligibility,
-        search_knowledge_base
+        search_knowledge_base,
+        fetch_ehr_medical_history
     ],
     system_prompt=(
         "You are an advanced healthcare operations assistant.\n\n"
