@@ -103,6 +103,7 @@ ormsgpack==1.12.2
 packaging==25.0
 pathable==0.6.0
 pinecone==9.1.0
+pinecone-plugin-records==1.1.0
 platformdirs==4.10.0
 prompt_toolkit==3.0.52
 propcache==0.5.2

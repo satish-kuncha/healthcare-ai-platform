@@ -1,0 +1,19 @@
+I have the INS-1111 corporate package. Does it cover orthopedic consultations, and do I have to pay a co-pay?
+
+
+Yes, your INS-1111 corporate package covers orthopedic consultations, and you have a 100% co-pay waiver, so you do not have to pay a co-pay.
+----------------------------------
+Test Case 1: The "Late Fee" Conflict (Disambiguation)
+The Query: "What happens if I cancel late? What is the penalty fee?"
+
+Why it tests the Re-Ranker: The text contains multiple references to fees and penalties (a $75 fee for cancelling late in Section 1.3, and a $75 fee for late arrivals/forfeiture in Section 1.4). A standard semantic search might get confused and pull the "Late Arrival" chunk to the top because it matches words like "late". The re-ranker will read the specific intent of "cancel" vs "arrival" and rank the cancellation policy chunk first.
+
+Test Case 2: The "Alternative Medicine" Exclusion
+The Query: "I have a Tier A premium insurance plan. Can I use it to cover my homeopathic or alternative medicine treatment?"
+
+Why it tests the Re-Ranker: The word "Tier A" appears heavily in Section 2.1 (which talks about 100% coverage). The word "Homeopathic" appears in Section 2.2. Standard semantic search might rank the Tier A chunk as number one because the user started by saying "I have a Tier A plan". The re-ranker, however, knows that the ultimate question is about coverage eligibility for alternative treatments, so it forces Section 2.2 to the top slot, preventing the AI from telling the user it's covered.
+
+Test Case 3: The "Allergy Overrides" Protocol
+The Query: "What is the procedure if a medication triggers an allergy flag in the system? Who has to sign off?"
+
+Why it tests the Re-Ranker: Section 3.1 discusses prescription rules and signatures for Schedule H drugs. Section 3.3 discusses allergy flags and physician overrides. Both share keywords like "signature", "physician", and "system". The re-ranker ensures the structural logic of the system override process wins over generic prescription rules.
