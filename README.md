@@ -64,3 +64,26 @@ The architecture decouples the reasoning engine (PydanticAI) from state memory (
 |   (SQLite Appt.   |     |  (Vector RAG +    |     | Server (FastMCP)  |
 |    Management)    |     |   Re-Ranker)      |     | via stdio routing |
 +-------------------+     +-------------------+     +-------------------+
+
+
+---------------------------------------------------------------------------------------------
+
+├── app/
+│   ├── api/
+│   │   └── server.py             # FastAPI routing and HITL HTTP endpoints
+│   ├── agents/
+│   │   └── healthcare_agent.py   # PydanticAI Agent definition & Tool bindings
+│   ├── workflows/
+│   │   └── graph.py              # LangGraph state machine layout
+│   └── db/
+│       └── store.py              # SQLite checkpointer & memory management
+├── frontend/                     # React Single Page App (Voice UI)
+├── mcp_server/
+│   ├── server.py                 # FastMCP secure EHR Gateway
+│   └── ehr_db.json               # Mock patient record database
+├── knowledge/
+│   └── extended_clinic_manual.txt# Dense clinical operations corpus for RAG
+├── ingest.py                     # Pinecone ingestion & chunking script
+├── docker-compose.yml            # Multi-container orchestration config
+├── requirements.txt              # Frozen Python dependencies
+└── .env                          # Runtime configuration keys (git-ignored)
