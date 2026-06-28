@@ -8,7 +8,7 @@ An enterprise-grade, asynchronous AI voice receptionist and clinical operations 
 * **Advanced RAG Pipeline:** Pinecone Serverless integration with Two-Stage Retrieval (Bi-Encoder Dense Search + Cross-Encoder Re-Ranking) for zero-hallucination policy answers.
 * **Model Context Protocol (MCP):** A self-hosted FastMCP server acts as a secure Electronic Health Records (EHR) gateway, decoupling sensitive data from the main reasoning engine.
 * **Type-Safe AI Tools:** PydanticAI rules layer ensures all LLM tool executions match precise backend schemas.
-
+* **Observability using langfuse:** observablity using langfuse
 ---
 
 ## 🚀 Technology Stack
