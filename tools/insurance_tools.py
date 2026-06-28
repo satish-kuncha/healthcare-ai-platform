@@ -1,5 +1,6 @@
 import os
 from pinecone import Pinecone
+from langfuse import observe
 
 # Initialize Pinecone connection globally so it doesn't reconnect on every message
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
@@ -16,7 +17,7 @@ from models.context import PatientContext
 
 
 
-
+@observe(as_type="tool")
 async def verify_coverage(ctx: RunContext[PatientContext]):
     """Verify insurance coverage details using the context member ID."""
     patient = ctx.deps
@@ -26,6 +27,7 @@ async def verify_coverage(ctx: RunContext[PatientContext]):
     print(f"\n[TOOL RUNNING] verify_coverage for member_id: {patient.member_id}")
     return {"covered": True, "copay": 25}
 
+@observe(as_type="tool")
 async def check_eligibility(ctx: RunContext[PatientContext]):
     """Check general healthcare program eligibility for the context member ID."""
     patient = ctx.deps
@@ -35,7 +37,7 @@ async def check_eligibility(ctx: RunContext[PatientContext]):
     print(f"\n[TOOL RUNNING] check_eligibility for member_id: {patient.member_id}")
     return {"eligible": True}
 
-
+@observe(as_type="tool")
 async def search_knowledge_base_old(query: str) -> str:
     """
     Search the clinic's internal knowledge base for insurance policies, scheduling rules, and coverage details.
@@ -80,7 +82,7 @@ async def search_knowledge_base_old(query: str) -> str:
         print(f"[RAG ERROR] {str(e)}")
         return "The knowledge base is currently unavailable. Please ask a human manager."
 
-
+@observe(as_type="tool")
 async def search_knowledge_base(query: str) -> str:
     """
     Search the clinic's internal knowledge base for insurance policies, scheduling rules, and coverage details.

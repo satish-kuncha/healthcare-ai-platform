@@ -1,7 +1,9 @@
 from pydantic_ai import RunContext
 from pydantic import ValidationError
 from models.context import PatientContext
+from langfuse import observe
 
+@observe(as_type="tool")
 def update_patient_record(
     ctx: RunContext[PatientContext], 
     patient_name: str | None = None, 

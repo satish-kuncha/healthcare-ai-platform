@@ -5,6 +5,7 @@ from agents.healthcare_agent import healthcare_agent
 from langgraph.checkpoint.memory import MemorySaver
 # Import the real, pure API function here in the orchestrator
 from tools.scheduling_tools import book_appointment
+from langfuse import observe
 
 # 1. Define the Graph State
 # This replaces the variables you used to manage manually in the while loop
@@ -14,6 +15,7 @@ class WorkflowState(TypedDict):
     user_input: str
     approval_granted: bool | None
 
+@observe(as_type="generation")
 async def reasoning_node(state: WorkflowState):
     """This node gives the current state to PydanticAI and waits for its actions."""
     

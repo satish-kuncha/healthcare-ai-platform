@@ -1,5 +1,11 @@
 from utils.mcp_client import query_mcp_ehr
+from langfuse import observe
 
+
+#In production use @observe(as_type="tool", capture_input=False, capture_output=False) to not log patient information
+#or use Microsoft Presidio (an open-source PII/PHI analyzer)
+#or use self hosted langfuse
+@observe(as_type="tool")
 async def fetch_ehr_medical_history(patient_id: str) -> str:
     """
     Query the isolated Electronic Health Records (EHR) server to find a patient's 

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import warnings
 import traceback
 from fastapi.middleware.cors import CORSMiddleware  # <-- ADD THIS
+from langfuse import observe
 
 # Suppress LangGraph msgpack warnings
 warnings.filterwarnings("ignore", message="Deserializing unregistered type")
@@ -44,6 +45,7 @@ async def startup_event():
     await init_db()
 
 # 4. The Core Chat Endpoint
+@observe()
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     patient_context, message_history = await load_session(request.session_id)
