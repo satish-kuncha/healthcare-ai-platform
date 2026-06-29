@@ -6,7 +6,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.context import PatientContext
-from agents.unified_agent import healthcare_agent
+from agents.healthcare_agent import healthcare_agent
 
 async def run_evaluation():
     print("Phase 6: Running Deterministic Workflow Evaluations...\n")
