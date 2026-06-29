@@ -1,269 +1,499 @@
-Autonomous AI Voice Receptionist & Healthcare Platform
-An enterprise-grade, asynchronous AI voice receptionist and clinical operations platform. This application leverages a finite state machine orchestrator to handle patient queries, manage appointment lifecycles with Human-in-the-Loop (HITL) guardrails, and interface safely with medical data via Advanced Two-Stage RAG and the Model Context Protocol (MCP).
+# Autonomous AI Voice Receptionist & Healthcare Platform
 
-✨ Core Features
-Voice-Enabled React Interface: Native browser speech-to-text and text-to-speech integration.
+An enterprise-grade, asynchronous AI voice receptionist and clinical operations platform.
 
-State Machine Orchestration: LangGraph checkpointer ensures session memory and pauses execution for administrative override (HITL) before high-risk actions (e.g., booking slots).
+This application leverages a **finite state machine orchestrator** to handle patient queries, manage appointment lifecycles with **Human-in-the-Loop (HITL)** guardrails, and interface safely with medical data via **Advanced Two-Stage Retrieval-Augmented Generation (RAG)** and the **Model Context Protocol (MCP)**.
 
-Advanced RAG Pipeline: Pinecone Serverless integration with Two-Stage Retrieval (Bi-Encoder Dense Search + Cross-Encoder Re-Ranking) for zero-hallucination policy answers.
+---
 
-Model Context Protocol (MCP): A self-hosted FastMCP server acts as a secure Electronic Health Records (EHR) gateway, routing logs via stderr to decouple sensitive data from the main reasoning engine.
+# ✨ Core Features
 
-Type-Safe AI Tools: PydanticAI rules layer ensures all LLM tool executions match precise backend schemas.
+## 🎙️ Voice-Enabled React Interface
 
-Production Observability: Full application lifecycle tracing and telemetry using Langfuse, nested automatically from top-level API traces down to tool-level generations.
+* Native browser **Speech-to-Text**
+* Native browser **Text-to-Speech**
+* Hands-free conversational experience
 
-🚀 Technology Stack
-Backend Framework: FastAPI (Python 3.13)
+## 🧠 State Machine Orchestration
 
-Frontend UI: React (Vite, TailwindCSS)
+* LangGraph workflow orchestration
+* Persistent conversation memory using SQLite checkpointer
+* Human-in-the-Loop (HITL) approval before high-risk actions
+* Interrupt/resume workflow execution
 
-Orchestration & Agent: PydanticAI (Google Gemini 2.5 Flash) & LangGraph
+## 📚 Advanced RAG Pipeline
 
-Vector Database: Pinecone Serverless
+* Pinecone Serverless Vector Database
+* Two-Stage Retrieval:
 
-Embedding & Re-ranking: Pinecone Integrated Inference (llama-text-embed-v2 & bge-reranker-v2-m3)
+  * Dense Bi-Encoder Search
+  * Cross-Encoder Re-Ranking
+* Designed for low-hallucination clinical policy retrieval
 
-Integrations Protocol: Anthropic FastMCP
+## 🔐 Model Context Protocol (MCP)
 
-Observability: Langfuse SDK
+* Self-hosted FastMCP server
+* Secure gateway to Electronic Health Records (EHR)
+* stderr logging keeps sensitive information isolated from LLM reasoning
 
-Database (State): SQLite (Local Thread Checkpointer)
+## ✅ Type-Safe AI Tools
 
-Containerization: Docker & Docker Compose
+* PydanticAI validation layer
+* Strict tool schemas
+* Safe backend execution
 
-🏗️ System Architecture
-The architecture decouples the reasoning engine (PydanticAI) from state memory (LangGraph/SQLite) and domain data (Pinecone RAG / FastMCP), allowing the system to scale securely.
+## 📈 Production Observability
 
-Plaintext
+* Langfuse tracing
+* Nested trace hierarchy
+* Tool-level telemetry
+* End-to-end request lifecycle monitoring
+
+---
+
+# 🚀 Technology Stack
+
+| Layer           | Technology                 |
+| --------------- | -------------------------- |
+| Backend         | FastAPI (Python 3.13)      |
+| Frontend        | React + Vite + TailwindCSS |
+| Agent Framework | PydanticAI                 |
+| LLM             | Google Gemini 2.5 Flash    |
+| Workflow Engine | LangGraph                  |
+| Vector Database | Pinecone Serverless        |
+| Embeddings      | llama-text-embed-v2        |
+| Re-Ranker       | bge-reranker-v2-m3         |
+| MCP             | Anthropic FastMCP          |
+| Observability   | Langfuse SDK               |
+| State Storage   | SQLite                     |
+| Containers      | Docker & Docker Compose    |
+
+---
+
+# 🏗️ System Architecture
+
+The platform separates:
+
+* **Reasoning** → PydanticAI
+* **Workflow Memory** → LangGraph + SQLite
+* **Knowledge Retrieval** → Pinecone
+* **Medical Data Access** → FastMCP
+
+This architecture enables secure, scalable, and modular AI operations.
+
+```text
 +-----------------------------------------------------------------------+
-|                             USER BROWSER                              |
+|                          USER BROWSER                                 |
 |                                                                       |
-|       [ React Web UI ] <-----------> [ Web Speech API (Voice) ]       |
-+---------------------------+-------------------------------------------+
-                            | 
-                            | HTTP POST /chat (JSON)
-                            v
+|   React Web UI  <------->  Web Speech API (Voice)                     |
++-----------------------------+-----------------------------------------+
+                              |
+                              | HTTP POST /chat
+                              v
 +-----------------------------------------------------------------------+
-|                         DOCKER: BACKEND APP                           |
+|                      DOCKER: BACKEND APP                              |
 |                                                                       |
-|  +-----------------------------------------------------------------+  |
-|  |                       FastAPI (Port 8000)                       |  |
-|  +--------------------------------+--------------------------------+  |
-|                                   |                                   |
-|  +--------------------------------v--------------------------------+  |
-|  |                     LangGraph Orchestrator                      |  |
-|  |       (Manages State, HITL Breakpoints, Thread Memory)          |  |
-|  +--------+-----------------------+-----------------------+--------+  |
-|           |                       |                       |           |
-|  +--------v-------+               |               +-------v-------+   |
-|  |   SQLite DB    |               |               |  PydanticAI   |   |
-|  | (Checkpointer) |               |               | (Gemini Flash)|   |
-|  +----------------+               |               +-------+-------+   |
-|                                   v                       |           |
-|                          [ TOOL EXECUTION ] <--------------+           |
-+-----------------------------------+-----------------------------------+
-                                    |
-          +-------------------------+-------------------------+
-          |                         |                         |
-+---------v---------+     +---------v---------+     +---------v---------+
-|     Local DB      |     |   Pinecone Cloud  |     |  Self-Hosted MCP  |
-|   (SQLite Appt.   |     |   (Vector RAG +   |     |  Server (FastMCP) |
-|    Management)    |     |    Re-Ranker)     |     | via stdio routing |
-+-------------------+     +-------------------+     +-------------------+
-📁 Repository Structure
-Plaintext
+|  +---------------------------------------------------------------+    |
+|  | FastAPI (Port 8000)                                          |    |
+|  +-----------------------------+---------------------------------+    |
+|                                |                                      |
+|                                v                                      |
+|  +---------------------------------------------------------------+    |
+|  | LangGraph Orchestrator                                       |    |
+|  | - Session Memory                                             |    |
+|  | - Workflow State                                             |    |
+|  | - HITL Breakpoints                                           |    |
+|  +------------+----------------------+---------------------------+    |
+|               |                      |                                |
+|               |                      |                                |
+|       +-------v------+      +--------v---------+                      |
+|       | SQLite State |      |   PydanticAI     |                      |
+|       | Checkpointer |      | Gemini Flash     |                      |
+|       +--------------+      +--------+---------+                      |
+|                                   |                                  |
+|                                   v                                  |
+|                           Tool Execution                              |
++-------------------------------+---------------------------------------+
+                                |
+        +-----------------------+-----------------------+
+        |                       |                       |
+        v                       v                       v
++----------------+     +--------------------+   +----------------------+
+| Local SQLite   |     | Pinecone Cloud     |   | FastMCP Server       |
+| Scheduling DB  |     | Two-Stage RAG      |   | Secure EHR Gateway   |
++----------------+     +--------------------+   +----------------------+
+```
+
+---
+
+# 📁 Repository Structure
+
+```text
+.
 ├── app/
 │   ├── api/
-│   │   └── server.py             # FastAPI routing and HITL HTTP endpoints
+│   │   └── server.py
 │   ├── agents/
-│   │   └── healthcare_agent.py   # PydanticAI Agent definition & Tool bindings
+│   │   └── healthcare_agent.py
 │   ├── workflows/
-│   │   └── graph.py              # LangGraph state machine layout
+│   │   └── graph.py
 │   └── db/
-│       └── store.py              # SQLite checkpointer & memory management
-├── frontend/                     # React Single Page App (Voice UI)
+│       └── store.py
+│
+├── frontend/
+│
 ├── mcpserver/
-│   ├── server.py                 # FastMCP secure EHR Gateway (Stdio routed via stderr)
-│   └── ehr_db.json               # Mock patient record database
+│   ├── server.py
+│   └── ehr_db.json
+│
 ├── knowledge/
-│   └── extended_clinic_manual.txt# Dense clinical operations corpus for RAG
-├── ingest.py                     # Pinecone ingestion & chunking script
-├── docker-compose.yml            # Multi-container orchestration config
-├── requirements.txt              # Frozen Python backend dependencies
-└── .env                          # Runtime configuration keys (git-ignored)
-⚙️ Setup & Installation
-1. Environment Configuration
-Create a .env file in the root directory and populate your credentials:
+│   └── extended_clinic_manual.txt
+│
+├── ingest.py
+├── docker-compose.yml
+├── requirements.txt
+└── .env
+```
 
-Plaintext
+---
+
+# ⚙️ Setup & Installation
+
+## 1. Environment Configuration
+
+Create a `.env` file in the project root.
+
+```env
+# ------------------------
 # Core API Keys
+# ------------------------
+
 GEMINI_API_KEY=your_gemini_api_key
 PINECONE_API_KEY=your_pinecone_api_key
 
-# Langfuse Observability
+# ------------------------
+# Langfuse
+# ------------------------
+
 LANGFUSE_PUBLIC_KEY=your_langfuse_public_key
 LANGFUSE_SECRET_KEY=your_langfuse_secret_key
 LANGFUSE_HOST=https://cloud.langfuse.com
 
-# RAG Engine Deployments
+# ------------------------
+# RAG Configuration
+# ------------------------
+
 KNOWLEDGE_FILE_PATH=knowledge/extended_clinic_manual.txt
+
 PINECONE_INDEX_NAME=healthcare-platform
 PINECONE_NAMESPACE=clinic-ops-v3
+
 EMBEDDING_MODEL=llama-text-embed-v2
 RERANK_MODEL=bge-reranker-v2-m3
 
-# Model Context Protocol Configuration
-# For Docker: /code/mcpserver/server.py
-# For Local: mcpserver/server.py
+# ------------------------
+# MCP Configuration
+# ------------------------
+
+# Docker
 EHR_SERVER_PATH=/code/mcpserver/server.py
-2. Ingesting the Clinical Knowledge Base
-To chunk, process, and push clinical manuals to your Pinecone cloud index using Integrated Inference, run the standalone ingestion engine locally before spinning up your endpoints:
 
-Bash
-# Set up virtual environment
+# Local
+# EHR_SERVER_PATH=mcpserver/server.py
+```
+
+---
+
+# 📥 Ingesting the Clinical Knowledge Base
+
+Create embeddings and upload your clinical corpus into Pinecone.
+
+```bash
+# Create virtual environment
+
 python -m venv venv
-source venv/bin/activate  # On Windows use: .\venv\Scripts\Activate.ps1
 
-# Install requirements and execute
+# Linux / macOS
+
+source venv/bin/activate
+
+# Windows
+
+.\venv\Scripts\Activate.ps1
+
+# Install dependencies
+
 pip install -r requirements.txt
+
+# Run ingestion
+
 python ingest.py
-🏃‍♂️ Running the Platform
-Option A: Running via Docker Compose (Recommended)
-This option packages the environment layers cleanly. Containers use /code as their working directory root. Ensure your .env lists EHR_SERVER_PATH=/code/mcpserver/server.py.
+```
 
-Bash
-# Build and run the local cluster
+---
+
+# 🏃 Running the Platform
+
+## Option A — Docker (Recommended)
+
+```bash
 docker-compose up --build
+```
 
-# To stop the cluster and tear down networks
+Stop everything:
+
+```bash
 docker-compose down
-Backend REST API: http://localhost:8000
+```
 
-Frontend Voice UI: http://localhost:5173
+### Services
 
-Option B: Running Locally (Bare-Metal Development)
-If you want to run the layers directly on your host machine for active debugging, open your .env and switch your path to EHR_SERVER_PATH=mcpserver/server.py.
+| Service     | URL                   |
+| ----------- | --------------------- |
+| Backend API | http://localhost:8000 |
+| Frontend UI | http://localhost:5173 |
 
-Bash
-# 1. Start the FastAPI Orchestration Server
-uvicorn app.api.server:app --host 0.0.0.0 --port 8000 --reload
+---
 
-# 2. In a separate terminal, start the React Web Frontend
+## Option B — Local Development
+
+Update:
+
+```env
+EHR_SERVER_PATH=mcpserver/server.py
+```
+
+Start FastAPI:
+
+```bash
+uvicorn app.api.server:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --reload
+```
+
+In another terminal:
+
+```bash
 cd frontend
+
 npm install
+
 npm run dev
-🧪 Operational Testing Playbook
-Once both layers are active, open http://localhost:5173 inside your browser to execute the clinical validation tests below.
+```
 
-🧪 Test 1: Basic State Memory Verification
-Voice / Text Prompt: "Hi, my name is Jane Doe, and my insurance policy ID is INS-491."
+---
 
-Expected System Behavior: The backend logs will trigger the update_patient_record tool execution. PydanticAI populates the PatientContext dependency. The agent will reply conversationally, confirming it has updated your session file.
+# 🧪 Operational Testing Playbook
 
-🧪 Test 2: Advanced Two-Stage RAG Execution
-Voice / Text Prompt: "What is the penalty fee if I arrive late versus cancelling late?"
+Open:
 
-Expected System Behavior: The agent detects a policy question and calls the search_knowledge_base tool. PydanticAI vectors the prompt using Pinecone Integrated Inference, fetches candidate chunks from extended_clinic_manual.txt, passes them to the bge-reranker-v2-m3 Cross-Encoder, and synthesizes an authoritative answer. Check your Langfuse dashboard to review the re-ranking scores.
+```
+http://localhost:5173
+```
 
-🧪 Test 3: Self-Hosted MCP EHR Data Connection
-Voice / Text Prompt: "My patient ID is PT-8831. Can you look up my profile and tell me what medications I am currently taking?"
+---
 
-Expected System Behavior: The agent invokes the fetch_ehr_medical_history tool. The FastAPI orchestrator opens a background pipe connection to the subprocess script designated by EHR_SERVER_PATH. The tool parses the local ehr-db.json database file, pipes human logs safely out via stderr, and outputs data back to the LLM via stdout. The agent responds detailing your prescriptions for Lisinopril and Metformin.
+## Test 1 — State Memory
 
-🧪 Test 4: Human-in-the-Loop (HITL) Gate Override
-Voice / Text Prompt: "I need to book an open slot for an appointment on Monday at 2 PM."
+### Prompt
 
-Expected System Behavior: The agent stages the reservation inside the context memory using stage_appointment_booking and yields control. LangGraph intercepts the workflow execution state before reaching the database booking node, freezes the thread, and returns an HTTP status code 423 Locked. The React UI displays the Administrative Override interface. Once an administrator approves or denies the endpoint request via /admin/approve, the state machine resumes execution to close out the interaction loop.
+> Hi, my name is Jane Doe, and my insurance policy ID is INS-491.
 
+### Expected
 
-----------------------------------------------
+* `update_patient_record` executes
+* Patient context is updated
+* Session memory persists
 
-Architecture & Workflow Diagrams
+---
 
-1. End-to-End System Architecture Flow
+## Test 2 — Advanced Two-Stage RAG
 
-This diagram illustrates the separation of concerns across the entire platform. Notice how the LangGraph orchestrator acts as the "manager" that wraps around the PydanticAI "brain," carefully controlling when the brain is allowed to reach out to external tools.
+### Prompt
 
-                      [ User Browser (React + Voice) ]
-                                     ^ |
-                                     | | (HTTP POST /chat)
-                                     | v
-+--------------------------------------------------------------------------------+
-|                             FastAPI Backend Container                          |
-|                                                                                |
-|  +-------------------+      +-------------------------------------------+      |
-|  | SQLite State DB   |<---->|              LangGraph                    |      |
-|  | (MemorySaver)     |      |  (Manages Memory, State, Routing, HITL)   |      |
-|  +-------------------+      +-------------------------------------------+      |
-|                                         ^ |                                    |
-|                                         | | (State Context & Messages)         |
-|                                         | v                                    |
-|                             +-------------------------------------------+      |
-|                             |           PydanticAI Agent                |      |
-|                             |     (Gemini 2.5 Flash + Guardrails)       |      |
-|                             +-------------------------------------------+      |
-|                                     /       |          \                       |
-|           (Tool Execution)         /        |           \                      |
-|                                   /         |            \                     |
-+----------------------------------/----------|-------------\--------------------+
-                                  /           |              \
-                                 v            v               v
-             +--------------------+    +-------------+   +-----------------------+
-             |   Pinecone Cloud   |    | Local SQLite|   |  FastMCP Subprocess   |
-             | (Two-Stage RAG API)|    | (Scheduling)|   | (EHR / ehr_db.json)   |
-             +--------------------+    +-------------+   +-----------------------+
+> What is the penalty fee if I arrive late versus cancelling late?
 
+### Expected
 
-2. LangGraph State Machine (Nodes & Edges)
+* `search_knowledge_base` executes
+* Dense Retrieval
+* Cross-Encoder Re-ranking
+* Grounded response
+* Re-ranking visible in Langfuse
 
-This diagram maps out the exact routing logic defined in your graph.py file. It visualizes the Procedural Memory of the application—how it instinctively knows to pause for human approval, loop back upon rejection, or loop back to inform the user of a successful booking.
+---
 
-          [ START ]
-              |
-              v
-      +----------------+
-      |                |<-----------------------------------------+
-      |  "reason" Node |<-----------------------+                 |
-      | (Pydantic AI)  |                        |                 |
-      +-------+--------+                        |                 |
-              |                                 |                 |
-              v                                 |                 |
-   { route_after_reasoning }                    | (Rejected)      | (Success Confirm)
-       /                  \                     |                 |
-[No Booking Staged]   [Booking Staged]          |                 |
-      |                    |                    |                 |
-      v                    v                    |                 |
-   [ END ]       +--------------------+         |                 |
-                 | "human_approval"   |---------+                 |
-                 | Node (HITL Gate)   |                           |
-                 +--------+-----------+                           |
-                          |                                       |
-                          v                                       |
-                { route_after_approval }                          |
-                          |                                       |
-                     (Approved)                                   |
-                          |                                       |
-                          v                                       |
-                 +--------------------+                           |
-                 | "execute_booking"  |                           |
-                 | Node (DB Action)   |---------------------------+
-                 +--------------------+
+## Test 3 — MCP EHR Lookup
 
+### Prompt
 
-Flow Explanation:
+> My patient ID is PT-8831. Can you look up my profile and tell me what medications I am currently taking?
 
-The Core Loop: Every turn starts at the reason node. The LLM processes the user's input.
+### Expected
 
-Conditional Check 1 (route_after_reasoning): If the LLM successfully gathered all data and placed a date/time into the pending_booking_day scratchpad, the graph routes to the HITL gate. If not (e.g., standard Q&A), it routes to END and returns the message to the user.
+* `fetch_ehr_medical_history`
+* FastMCP subprocess launches
+* Reads `ehr_db.json`
+* Returns:
 
-The Freeze: At human_approval, execution halts entirely (interrupt_before), returning a 423 status to the UI.
+  * Lisinopril
+  * Metformin
 
-Conditional Check 2 (route_after_approval): When the admin hits /admin/approve, the graph wakes up.
+---
 
-If denied, it loops backward to the reason node so the LLM can generate an apology.
+## Test 4 — Human-in-the-Loop Approval
 
-If approved, it moves forward to execute_booking.
+### Prompt
 
-Final Loop: After execute_booking commits the data to SQLite, the graph explicitly loops back to the reason node one last time, allowing the LLM to read the success confirmation and formulate a natural, friendly goodbye message.
+> I need to book an open slot for an appointment on Monday at 2 PM.
+
+### Expected
+
+1. Appointment staged
+2. LangGraph pauses execution
+3. HTTP **423 Locked**
+4. React shows admin approval screen
+5. `/admin/approve` resumes execution
+6. Booking committed
+7. LLM returns confirmation
+
+---
+
+# 🏛️ Architecture Diagrams
+
+## End-to-End Architecture
+
+```mermaid
+flowchart TB
+
+User["User Browser<br/>React + Voice"]
+
+FastAPI["FastAPI Backend"]
+
+LG["LangGraph<br/>Workflow Engine"]
+
+SQLite["SQLite<br/>State Memory"]
+
+Agent["PydanticAI<br/>Gemini 2.5 Flash"]
+
+Pinecone["Pinecone<br/>Two-Stage RAG"]
+
+Schedule["SQLite<br/>Scheduling DB"]
+
+MCP["FastMCP<br/>EHR Gateway"]
+
+User --> FastAPI
+FastAPI --> LG
+
+LG <--> SQLite
+LG --> Agent
+
+Agent --> Pinecone
+Agent --> Schedule
+Agent --> MCP
+```
+
+---
+
+## LangGraph State Machine
+
+```mermaid
+flowchart TD
+
+Start([START])
+
+Reason["Reason Node<br/>PydanticAI"]
+
+Approval["Human Approval<br/>HITL"]
+
+Booking["Execute Booking"]
+
+End([END])
+
+Start --> Reason
+
+Reason -->|Normal Conversation| End
+
+Reason -->|Booking Staged| Approval
+
+Approval -->|Approved| Booking
+
+Approval -->|Rejected| Reason
+
+Booking --> Reason
+
+Reason --> End
+```
+
+---
+
+# 🔄 Workflow Explanation
+
+## 1. Reasoning
+
+Every user interaction begins in the **Reason Node**, where the LLM processes the incoming request.
+
+---
+
+## 2. Conditional Routing
+
+If no appointment is staged:
+
+```
+Reason → END
+```
+
+Otherwise:
+
+```
+Reason → Human Approval
+```
+
+---
+
+## 3. Human-in-the-Loop
+
+The workflow pauses before any irreversible action.
+
+* Execution freezes
+* HTTP 423 is returned
+* UI displays admin approval interface
+
+---
+
+## 4. Resume
+
+Administrator response determines the next transition.
+
+**Approved**
+
+```
+Human Approval
+      ↓
+Execute Booking
+```
+
+**Rejected**
+
+```
+Human Approval
+      ↓
+Reason Node
+```
+
+---
+
+## 5. Completion
+
+After booking is committed:
+
+```
+Execute Booking
+        ↓
+Reason Node
+        ↓
+END
+```
+
+The final pass allows the LLM to generate a natural conversational confirmation before ending the interaction.
