@@ -176,3 +176,94 @@ Expected System Behavior: The agent invokes the fetch_ehr_medical_history tool. 
 Voice / Text Prompt: "I need to book an open slot for an appointment on Monday at 2 PM."
 
 Expected System Behavior: The agent stages the reservation inside the context memory using stage_appointment_booking and yields control. LangGraph intercepts the workflow execution state before reaching the database booking node, freezes the thread, and returns an HTTP status code 423 Locked. The React UI displays the Administrative Override interface. Once an administrator approves or denies the endpoint request via /admin/approve, the state machine resumes execution to close out the interaction loop.
+
+
+----------------------------------------------
+
+Architecture & Workflow Diagrams
+
+1. End-to-End System Architecture Flow
+
+This diagram illustrates the separation of concerns across the entire platform. Notice how the LangGraph orchestrator acts as the "manager" that wraps around the PydanticAI "brain," carefully controlling when the brain is allowed to reach out to external tools.
+
+                      [ User Browser (React + Voice) ]
+                                     ^ |
+                                     | | (HTTP POST /chat)
+                                     | v
++--------------------------------------------------------------------------------+
+|                             FastAPI Backend Container                          |
+|                                                                                |
+|  +-------------------+      +-------------------------------------------+      |
+|  | SQLite State DB   |<---->|              LangGraph                    |      |
+|  | (MemorySaver)     |      |  (Manages Memory, State, Routing, HITL)   |      |
+|  +-------------------+      +-------------------------------------------+      |
+|                                         ^ |                                    |
+|                                         | | (State Context & Messages)         |
+|                                         | v                                    |
+|                             +-------------------------------------------+      |
+|                             |           PydanticAI Agent                |      |
+|                             |     (Gemini 2.5 Flash + Guardrails)       |      |
+|                             +-------------------------------------------+      |
+|                                     /       |          \                       |
+|           (Tool Execution)         /        |           \                      |
+|                                   /         |            \                     |
++----------------------------------/----------|-------------\--------------------+
+                                  /           |              \
+                                 v            v               v
+             +--------------------+    +-------------+   +-----------------------+
+             |   Pinecone Cloud   |    | Local SQLite|   |  FastMCP Subprocess   |
+             | (Two-Stage RAG API)|    | (Scheduling)|   | (EHR / ehr_db.json)   |
+             +--------------------+    +-------------+   +-----------------------+
+
+
+2. LangGraph State Machine (Nodes & Edges)
+
+This diagram maps out the exact routing logic defined in your graph.py file. It visualizes the Procedural Memory of the application—how it instinctively knows to pause for human approval, loop back upon rejection, or loop back to inform the user of a successful booking.
+
+          [ START ]
+              |
+              v
+      +----------------+
+      |                |<-----------------------------------------+
+      |  "reason" Node |<-----------------------+                 |
+      | (Pydantic AI)  |                        |                 |
+      +-------+--------+                        |                 |
+              |                                 |                 |
+              v                                 |                 |
+   { route_after_reasoning }                    | (Rejected)      | (Success Confirm)
+       /                  \                     |                 |
+[No Booking Staged]   [Booking Staged]          |                 |
+      |                    |                    |                 |
+      v                    v                    |                 |
+   [ END ]       +--------------------+         |                 |
+                 | "human_approval"   |---------+                 |
+                 | Node (HITL Gate)   |                           |
+                 +--------+-----------+                           |
+                          |                                       |
+                          v                                       |
+                { route_after_approval }                          |
+                          |                                       |
+                     (Approved)                                   |
+                          |                                       |
+                          v                                       |
+                 +--------------------+                           |
+                 | "execute_booking"  |                           |
+                 | Node (DB Action)   |---------------------------+
+                 +--------------------+
+
+
+Flow Explanation:
+
+The Core Loop: Every turn starts at the reason node. The LLM processes the user's input.
+
+Conditional Check 1 (route_after_reasoning): If the LLM successfully gathered all data and placed a date/time into the pending_booking_day scratchpad, the graph routes to the HITL gate. If not (e.g., standard Q&A), it routes to END and returns the message to the user.
+
+The Freeze: At human_approval, execution halts entirely (interrupt_before), returning a 423 status to the UI.
+
+Conditional Check 2 (route_after_approval): When the admin hits /admin/approve, the graph wakes up.
+
+If denied, it loops backward to the reason node so the LLM can generate an apology.
+
+If approved, it moves forward to execute_booking.
+
+Final Loop: After execute_booking commits the data to SQLite, the graph explicitly loops back to the reason node one last time, allowing the LLM to read the success confirmation and formulate a natural, friendly goodbye message.
