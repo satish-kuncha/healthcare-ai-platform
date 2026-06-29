@@ -2,6 +2,10 @@ import os
 import sys
 from mcp import ClientSession
 from mcp.client.stdio import stdio_client, StdioServerParameters
+from dotenv import load_dotenv
+
+# Load environment configuration
+load_dotenv()
 
 # Configure parameters to spawn our server.py script as a subprocess
 # We dynamically target the current running python executable to ensure venv compatibility
